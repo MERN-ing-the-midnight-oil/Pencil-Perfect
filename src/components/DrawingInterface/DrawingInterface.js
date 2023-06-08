@@ -32,21 +32,46 @@ const DrawingInterface = () => {
 			drawing = false;
 			ctx.beginPath(); // Start a new path for the next time the user starts drawing
 		};
-
 		const draw = (e) => {
 			if (!drawing) return;
-			ctx.lineTo(e.touches[0].clientX, e.touches[0].clientY); // Draw a line to the new location
-			ctx.stroke(); // Render the line
-			ctx.beginPath(); // Start a new path
-			ctx.moveTo(e.touches[0].clientX, e.touches[0].clientY); // Move the pen to the new location
+			let x = 0;
+			let y = 0;
+
+			if (e.type === "touchmove" || e.type === "touchstart") {
+				// For touch events
+				x = e.touches[0].clientX;
+				y = e.touches[0].clientY;
+			} else {
+				// For mouse events
+				x = e.clientX;
+				y = e.clientY;
+			}
+
+			ctx.lineTo(x, y);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.moveTo(x, y);
 		};
 
+		// Add mouse event listeners
+		canvas.addEventListener("mousedown", startDrawing);
+		canvas.addEventListener("mouseup", stopDrawing);
+		canvas.addEventListener("mouseout", stopDrawing);
+		canvas.addEventListener("mousemove", draw);
+
+		// Add touch event listeners
 		canvas.addEventListener("touchstart", startDrawing);
 		canvas.addEventListener("touchend", stopDrawing);
 		canvas.addEventListener("touchmove", draw);
 
 		return () => {
-			// Cleanup when component unmounts
+			// Cleanup for mouse events
+			canvas.removeEventListener("mousedown", startDrawing);
+			canvas.removeEventListener("mouseup", stopDrawing);
+			canvas.removeEventListener("mouseout", stopDrawing);
+			canvas.removeEventListener("mousemove", draw);
+
+			// Cleanup for touch events
 			canvas.removeEventListener("touchstart", startDrawing);
 			canvas.removeEventListener("touchend", stopDrawing);
 			canvas.removeEventListener("touchmove", draw);
