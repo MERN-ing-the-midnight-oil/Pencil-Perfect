@@ -3,25 +3,27 @@ import React, { useRef, useEffect, useState } from "react";
 // Initial styles can be placed in the CSS module
 import styles from "./DrawingInterface.module.css";
 
+//importing a hook
+import useStrokeRecorder from "../StrokeRecorder/StrokeRecorder";
+
 const DrawingInterface = () => {
-	const [isRecording, setIsRecording] = useState(false); // State to track if we are currently recording
-	const [strokes, setStrokes] = useState([]); // State to store the recorded strokes
+	// Call the custom hook and get the necessary variables and functions
+	const { isRecording, strokes, startRecording, stopRecording, recordStroke } =
+		useStrokeRecorder();
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
+		//setup canvas and event listeners
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext("2d"); // Get the 2D context for the canvas
-
 		// Set canvas width and height to the size of its parent container
 		canvas.width = canvas.parentElement.offsetWidth;
 		canvas.height = canvas.parentElement.offsetHeight;
-
 		// Set some initial properties for the canvas
 		ctx.fillStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeStyle = "black";
 		ctx.lineWidth = 4;
-
 		// Set up touch events
 		let drawing = false;
 
@@ -36,28 +38,20 @@ const DrawingInterface = () => {
 		};
 		//draw function first checks if drawing is true (the pen is down). Then, it determines whether the event is a touch event or a mouse event based on the event's type and gets the coordinates accordingly. It uses these coordinates to draw a line from the previous location to the new location,
 		const draw = (e) => {
-			if (!drawing) return; // Don't do anything if we're not currently drawing
-			let x = 0;
-			let y = 0;
-			// Distinguish between mouse and touch events
-			if (e.type === "touchmove" || e.type === "touchstart") {
-				// For touch events
-				x = e.touches[0].clientX;
-				y = e.touches[0].clientY;
-			} else {
-				// For mouse events
-				x = e.clientX;
-				y = e.clientY;
-			}
+			if (!drawing) return;
+			ctx.lineTo(e.clientX, e.clientY);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.moveTo(e.clientX, e.clientY);
 
-			ctx.lineTo(x, y); // Draw line to new point
-			ctx.stroke(); // Render the line
-			ctx.beginPath(); // Start new path
-			ctx.moveTo(x, y); // Move pen to new location
-
-			// If currently recording, add this stroke to the strokes array
 			if (isRecording) {
-				setStrokes((oldStrokes) => [...oldStrokes, { x, y }]);
+				// Only record the stroke if we're currently recording
+
+				const rect = canvasRef.current.getBoundingClientRect();
+
+				const x = e.clientX - rect.left; // Adjust the x coordinate for canvas bounds
+				const y = e.clientY - rect.top; // Adjust the y coordinate for canvas bounds
+				recordStroke({ x, y }); // Record the stroke
 			}
 		};
 
@@ -89,7 +83,8 @@ const DrawingInterface = () => {
 	return (
 		<div className={styles.drawingInterface}>
 			{/* Button to start/stop recording. Clicking it toggles isRecording and the label reflects current recording status */}
-			<button onClick={() => setIsRecording(!isRecording)}>
+			<button
+				onClick={() => (isRecording ? stopRecording() : startRecording())}>
 				{isRecording ? "Stop Recording" : "Start Recording"}
 			</button>
 			{/* We set the width and height directly on the canvas element for a sharp, clear canvas */}
