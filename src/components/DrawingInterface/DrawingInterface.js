@@ -1,9 +1,11 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 // Initial styles can be placed in the CSS module
 import styles from "./DrawingInterface.module.css";
 
 const DrawingInterface = () => {
+	const [isRecording, setIsRecording] = useState(false); // State to track if we are currently recording
+	const [strokes, setStrokes] = useState([]); // State to store the recorded strokes
 	const canvasRef = useRef(null);
 
 	useEffect(() => {
@@ -32,11 +34,12 @@ const DrawingInterface = () => {
 			drawing = false;
 			ctx.beginPath(); // Start a new path for the next time the user starts drawing
 		};
+		//draw function first checks if drawing is true (the pen is down). Then, it determines whether the event is a touch event or a mouse event based on the event's type and gets the coordinates accordingly. It uses these coordinates to draw a line from the previous location to the new location,
 		const draw = (e) => {
-			if (!drawing) return;
+			if (!drawing) return; // Don't do anything if we're not currently drawing
 			let x = 0;
 			let y = 0;
-
+			// Distinguish between mouse and touch events
 			if (e.type === "touchmove" || e.type === "touchstart") {
 				// For touch events
 				x = e.touches[0].clientX;
@@ -47,10 +50,15 @@ const DrawingInterface = () => {
 				y = e.clientY;
 			}
 
-			ctx.lineTo(x, y);
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.moveTo(x, y);
+			ctx.lineTo(x, y); // Draw line to new point
+			ctx.stroke(); // Render the line
+			ctx.beginPath(); // Start new path
+			ctx.moveTo(x, y); // Move pen to new location
+
+			// If currently recording, add this stroke to the strokes array
+			if (isRecording) {
+				setStrokes((oldStrokes) => [...oldStrokes, { x, y }]);
+			}
 		};
 
 		// Add mouse event listeners
@@ -80,6 +88,10 @@ const DrawingInterface = () => {
 
 	return (
 		<div className={styles.drawingInterface}>
+			{/* Button to start/stop recording. Clicking it toggles isRecording and the label reflects current recording status */}
+			<button onClick={() => setIsRecording(!isRecording)}>
+				{isRecording ? "Stop Recording" : "Start Recording"}
+			</button>
 			{/* We set the width and height directly on the canvas element for a sharp, clear canvas */}
 			<canvas
 				ref={canvasRef}
