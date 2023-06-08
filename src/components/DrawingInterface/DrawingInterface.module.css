@@ -1,0 +1,7 @@
+.drawingInterface {
+    border: 4px solid black;
+    background-color: grey;
+    width: 70vw;  /* set to 70% of viewport width */
+    height: 70vh;  /* set to 70% of viewport height */
+  }
+  

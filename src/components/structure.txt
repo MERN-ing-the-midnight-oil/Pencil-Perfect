@@ -1,29 +1,25 @@
 /components
     /DrawingInterface
         DrawingInterface.js 
-             // This is your main component that interacts with the user. It includes the visual rendering of the goal symbol and the user's input, and it communicates with other components to check the accuracy and sequence of the strokes.
+             // This is your main component that interacts with the user. It includes the visual rendering of the goal symbol and the user's input, and it communicates with other components to check the accuracy and sequence of the strokes. The DrawingInterface will interact with the StrokeRecorder to get the data of strokes as they are made, and will also work with the GoalSymbolRenderer to display the goal symbol. It will also use the ConditionalRenderer to get feedback on the student's strokes.
 
         DrawingInterface.module.css 
-            // This file contains the styles specific to the DrawingInterface component.
+            // This file contains the styles specific to the DrawingInterface component. These styles are applied to the elements rendered by the DrawingInterface.js
 
     /StrokeRecorder
         StrokeRecorder.js  
-            // This component handles capturing the user's input (i.e., the drawn strokes). It collects the touch events when a user is drawing, and records the path, order, and direction of each stroke. Both teacher while drawing the goal symbol and the student while trying to match it. Teacher: The StrokeRecorder.js will record the strokes as the teacher draws the goal symbol. The teacher's strokes will define the 'correct' sequence and path for the student to follow. It should record not only the path of each stroke, but also the order and direction in which they are made. This information will be used later to analyze the student's strokes.Student: When it's the student's turn to try and replicate the goal symbol, the StrokeRecorder.js will also record the student's strokes. Just like with the teacher, it should capture the path, order, and direction of each stroke.
-
+            // This component handles capturing the user's input (i.e., the drawn strokes). It collects the touch events when a user is drawing, and records the path, order, and direction of each stroke. Both teacher while drawing the goal symbol and the student while trying to match it. The StrokeRecorder will pass this recorded information to both the GoalSymbolRenderer (to display the teacher's strokes as the goal symbol) and the ConditionalRenderer (to analyze the student's strokes). 
 
     /GoalSymbolRenderer
         GoalSymbolRenderer.js  
-            // This component handles rendering the goal symbol that the student needs to mimic. It gets the strokes from the teacher input and displays them in correct order. It could show the complete goal symbol in dotted lines, and show the current expected stroke in a solid line.
+            // This component handles rendering the goal symbol that the student needs to mimic. It gets the strokes from the teacher input (passed from the StrokeRecorder) and animates them being drawn in correct order. It works closely with the DrawingInterface to ensure the correct rendering of the goal symbol.
 
-        GoalSymbolRenderer.module.css // This file contains the styles specific to the GoalSymbolRenderer component.
-
+        GoalSymbolRenderer.module.css 
+            // This file contains the styles specific to the GoalSymbolRenderer component. These styles are applied to the elements rendered by the GoalSymbolRenderer.js
 
     /ConditionalRenderer
         ConditionalRenderer.js 
-            //Receives each new stroke from the StrokeRecorder.js as soon as it's made.Checks if the stroke is correct (i.e., it matches the next stroke in the sequence of the goal symbol)If the stroke is correct, changes the appearance of the goal symbol as desired.If the stroke is incorrect, provides immediate feedback and discards the stroke.
+            //Receives each new stroke from the StrokeRecorder.js as soon as it's made. Checks if the stroke is correct (i.e., it matches the next stroke in the sequence of the goal symbol) If the stroke is correct, changes the appearance of the goal symbol as desired. If the stroke is incorrect, provides immediate feedback and discards the stroke. This component communicates with the DrawingInterface to provide immediate feedback to the user. 
 
-
-        ConditionalRenderer.module.css // This file contains the styles specific to the ConditionalRenderer component.
-
-   
-   
+        ConditionalRenderer.module.css 
+            // This file contains the styles specific to the ConditionalRenderer component. These styles are applied to the elements rendered by the ConditionalRenderer.js
