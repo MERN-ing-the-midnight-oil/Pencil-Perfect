@@ -6,13 +6,14 @@ const DrawingInterface = () => {
 	let ctx;
 
 	useEffect(() => {
-		// Get the 2D rendering context for the canvas
-		ctx = canvasRef.current.getContext("2d");
-	}, []);
+		if (canvasRef.current) {
+			ctx = canvasRef.current.getContext("2d");
+		}
+	}, [canvasRef.current]);
 
 	const handleStrokeRecorded = (strokeData) => {
 		// Handle the recorded stroke data here
-		console.log("Recorded Stroke:", strokeData);
+		console.log("Hey the DrawingInterface has Recorded a Stroke:", strokeData);
 		// Perform any necessary actions or pass the data to other components
 	};
 
@@ -20,12 +21,15 @@ const DrawingInterface = () => {
 		<div>
 			{/* Canvas element for drawing */}
 			<canvas
-				ref={canvasRef} // Attach the canvas ref to the canvas element
-				style={{ border: "2px solid black" }} // Inline style for the canvas
+				ref={canvasRef}
+				style={{ border: "2px solid black" }}
 			/>
 
 			{/* StrokeRecorder component */}
-			<StrokeRecorder onStrokeRecorded={handleStrokeRecorded} />
+			<StrokeRecorder
+				canvasRef={canvasRef}
+				onStrokeRecorded={handleStrokeRecorded}
+			/>
 		</div>
 	);
 };

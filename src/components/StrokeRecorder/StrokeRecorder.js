@@ -1,69 +1,70 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
-const StrokeRecorder = ({ onStrokeRecorded }) => {
-	const canvasRef = useRef(null);
-	let ctx;
-	let currentStroke = [];
+const StrokeRecorder = ({ canvasRef, onStrokeRecorded }) => {
+	const ctx = useRef(null);
+	const currentStroke = useRef([]);
+
+	useEffect(() => {
+		if (canvasRef.current) {
+			ctx.current = canvasRef.current.getContext("2d");
+			console.log("Canvas initialized");
+		}
+	}, [canvasRef]);
 
 	const handleStrokeStart = (event) => {
-		// Start a new stroke by clearing the previous stroke coordinates
-		currentStroke = [];
-		// Capture the initial position of the stroke
 		const { offsetX, offsetY } = getMousePosition(event);
-		currentStroke.push({ x: offsetX, y: offsetY });
-		// Attach event listeners for stroke movement and end
+		currentStroke.current = [{ x: offsetX, y: offsetY }];
+		console.log("Stroke start:", currentStroke.current);
 		canvasRef.current.addEventListener("mousemove", handleStrokeMove);
 		canvasRef.current.addEventListener("mouseup", handleStrokeEnd);
 	};
 
 	const handleStrokeMove = (event) => {
-		// Capture the position of the stroke during movement
 		const { offsetX, offsetY } = getMousePosition(event);
-		currentStroke.push({ x: offsetX, y: offsetY });
-		// Render the stroke on the canvas
+		currentStroke.current.push({ x: offsetX, y: offsetY });
+		console.log("Stroke move:", currentStroke.current);
 		renderStroke();
 	};
 
 	const handleStrokeEnd = () => {
-		// Remove event listeners for stroke movement and end
 		canvasRef.current.removeEventListener("mousemove", handleStrokeMove);
 		canvasRef.current.removeEventListener("mouseup", handleStrokeEnd);
-		// Pass the recorded stroke data to the onStrokeRecorded callback
-		onStrokeRecorded(currentStroke);
+		console.log("Stroke end:", currentStroke.current);
+		saveStroke(currentStroke.current);
+		onStrokeRecorded(currentStroke.current);
 	};
 
 	const renderStroke = () => {
-		// Clear the canvas
-		ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-		// Render each line segment of the stroke
-		ctx.beginPath();
-		currentStroke.forEach((point, index) => {
+		const canvas = canvasRef.current;
+		const context = ctx.current;
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.beginPath();
+		currentStroke.current.forEach((point, index) => {
 			if (index === 0) {
-				ctx.moveTo(point.x, point.y);
+				context.moveTo(point.x, point.y);
 			} else {
-				ctx.lineTo(point.x, point.y);
+				context.lineTo(point.x, point.y);
 			}
 		});
-		ctx.stroke();
+		context.stroke();
+		console.log("Stroke rendered");
+	};
+
+	const saveStroke = (stroke) => {
+		const storedStrokes = JSON.parse(localStorage.getItem("strokes")) || [];
+		storedStrokes.push(stroke);
+		localStorage.setItem("strokes", JSON.stringify(storedStrokes));
+		console.log("Strokes saved:", storedStrokes);
 	};
 
 	const getMousePosition = (event) => {
-		// Calculate the mouse position relative to the canvas
 		const rect = canvasRef.current.getBoundingClientRect();
 		const offsetX = event.clientX - rect.left;
 		const offsetY = event.clientY - rect.top;
 		return { offsetX, offsetY };
 	};
 
-	return (
-		<div>
-			{/* Canvas element for stroke recording */}
-			<canvas
-				ref={canvasRef} // Attach the canvas ref to the canvas element
-				onMouseDown={handleStrokeStart} // Start recording stroke on mouse down
-			/>
-		</div>
-	);
+	return null; // Return null instead of a canvas element
 };
 
 export default StrokeRecorder;
